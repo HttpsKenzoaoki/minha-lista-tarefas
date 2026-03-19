@@ -15,10 +15,7 @@ Aplicação web para gerenciamento de tarefas (criar, listar, concluir e remover
 - Listar tarefas
 - Marcar tarefa como concluída
 - Remover tarefa
-- (Opcional) Persistência em **localStorage**
-- (Opcional) Filtro: todas / pendentes / concluídas
-
-> Observação: a lista acima pode ser ajustada conforme o que está implementado no código do repositório.
+- Persistência em **localStorage**
 
 ## Como baixar ou clonar o projeto
 
@@ -64,41 +61,13 @@ npm run dev
 
 - http://localhost:5173
 
-### Build de produção (opcional)
+### Build (opcional)
 
 ```bash
-npm run build
-```
-
-### Visualizar o build (opcional)
-
-```bash
-npm run preview
+npm run dev
 ```
 
 ## Estrutura do projeto (resumo)
 
 - `src/` — código-fonte (componentes, páginas, estilos)
-- `public/` — arquivos públicos
 - `package.json` — scripts e dependências
-
-## Vídeo explicativo (obrigatório)
-
-Grave um vídeo apresentando o projeto e inclua o link aqui.
-
-- Link do vídeo: **(adicione aqui o link do YouTube/Drive)**
-
-### Roteiro sugerido para o vídeo
-
-1. Apresentação rápida (seu nome e objetivo do projeto).
-2. Demonstração das funcionalidades (adicionar, concluir e remover tarefas).
-3. Explicação da implementação:
-   - Componentes principais
-   - Estado (ex.: `useState`) e fluxo de dados (props)
-   - Tipagens com TypeScript (interfaces/types)
-   - Persistência (se tiver) com `localStorage`
-4. Como rodar o projeto localmente.
-
-## Licença
-
-Defina a licença do projeto (ex.: MIT) ou remova esta seção se não for necessário.
