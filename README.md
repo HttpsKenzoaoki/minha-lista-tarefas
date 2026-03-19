@@ -61,12 +61,6 @@ npm run dev
 
 - http://localhost:5173
 
-### Build (opcional)
-
-```bash
-npm run dev
-```
-
 ## Estrutura do projeto (resumo)
 
 - `src/` — código-fonte (componentes, páginas, estilos)
