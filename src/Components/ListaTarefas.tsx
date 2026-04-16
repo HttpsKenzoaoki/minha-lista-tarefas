@@ -2,30 +2,35 @@ import { useState, useEffect } from "react";
 import "../Screens/Styles/ListaTarefas.css"; 
 import iconeVazio from "../assets/check-circle.svg";
 import iconecheio from "../assets/check-circle-fill.svg";
-
-interface Tarefa {
-    id: number;
-    nome: string;
-    descricao: string;
-    concluida: boolean;
-}
+import { createTarefa, deleteTarefa, getTarefas, type Tarefa, updateTarefa } from "../server/peopleCrud";
 
 type TipoOrdenação = "alfabetica" | "tempo";
 
 export function ListaTarefas() {
-    const [tarefas, setTarefas] = useState<Tarefa[]>(() => {
-        const dadosSalvos = localStorage.getItem("@MinhasTarefas:Lista");
-        return dadosSalvos ? JSON.parse(dadosSalvos) : [];
-    });
+    const [tarefas, setTarefas] = useState<Tarefa[]>([]);
 
     const [nome, setNome] = useState<string>('');
     const [descricao, setDescricao] = useState<string>('');
+    const [carregando, setCarregando] = useState<boolean>(true);
+    const [erro, setErro] = useState<string>('');
 
     const [ordenarPor, setOrdenarPor] = useState<TipoOrdenação>("tempo");
 
     useEffect(() => {
-        localStorage.setItem("@MinhasTarefas:Lista", JSON.stringify(tarefas));
-    }, [tarefas]);
+        const carregarTarefas = async () => {
+            try {
+                setErro('');
+                const lista = await getTarefas();
+                setTarefas(lista);
+            } catch {
+                setErro('Não foi possível carregar as tarefas.');
+            } finally {
+                setCarregando(false);
+            }
+        };
+
+        carregarTarefas();
+    }, []);
 
     const tarefasOrdenadas = [...tarefas].sort((a, b) => {
         if (ordenarPor === 'alfabetica') {
@@ -35,28 +40,60 @@ export function ListaTarefas() {
         }
     });
 
-    const adicionarTarefa = () => {
+    const adicionarTarefa = async () => {
         if (nome.trim() !== '') {
-            const novaTarefa: Tarefa = {
-                id: Date.now(),
-                nome: nome,
-                descricao: descricao,
-                concluida: false
-            };
-            setTarefas([...tarefas, novaTarefa]);
-            setNome("");
-            setDescricao("");
+            try {
+                setErro('');
+                const proximoId = tarefas.length > 0
+                    ? Math.max(...tarefas.map((tarefa) => Number(tarefa.id))) + 1
+                    : 1;
+
+                const novaTarefa = await createTarefa({
+                    id: proximoId,
+                    nome: nome,
+                    descricao: descricao,
+                    concluida: false
+                });
+
+                setTarefas((tarefasAtuais) => [...tarefasAtuais, novaTarefa]);
+                setNome("");
+                setDescricao("");
+            } catch {
+                setErro('Não foi possível adicionar a tarefa.');
+            }
         }
     };
 
-    const removerTarefa = (id: number) => {
-        setTarefas(tarefas.filter((t) => t.id !== id));
+    const removerTarefa = async (id: number) => {
+        try {
+            setErro('');
+            await deleteTarefa(id);
+            setTarefas((tarefasAtuais) => tarefasAtuais.filter((t) => t.id !== id));
+        } catch {
+            setErro('Não foi possível remover a tarefa.');
+        }
     };
 
-    const alterarConcluida = (id: number) => {
-        setTarefas(tarefas.map(tarefa =>
-            tarefa.id === id ? { ...tarefa, concluida: !tarefa.concluida } : tarefa
-        ));
+    const alterarConcluida = async (id: number) => {
+        const tarefaAtual = tarefas.find((tarefa) => tarefa.id === id);
+
+        if (!tarefaAtual) {
+            return;
+        }
+
+        try {
+            setErro('');
+            const tarefaAtualizada = await updateTarefa(id, {
+                ...tarefaAtual,
+                concluida: !tarefaAtual.concluida
+            });
+
+            setTarefas((tarefasAtuais) => tarefasAtuais.map((tarefa) =>
+                tarefa.id === id ? tarefaAtualizada : tarefa
+            ));
+        } catch {
+            setErro('Não foi possível atualizar a tarefa.');
+        }
     };
 
     return (
@@ -80,6 +117,10 @@ export function ListaTarefas() {
                 />
                 <button className="add-btn" onClick={adicionarTarefa}>Adicionar</button>
             </div>
+
+            {erro && <p>{erro}</p>}
+
+            {carregando && <p>Carregando tarefas...</p>}
 
                 <div className="sorting-controls">
                     <span>Ordenar por:</span>
